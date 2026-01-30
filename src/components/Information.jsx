@@ -8,90 +8,42 @@ export default function Information(props) {
     const [translation, setTranslation] = useState(null)
     const [toLanguage, setToLanguage] = useState('Select language')
     const [translating, setTranslating] = useState(null)
-    const [error, setError] = useState(null)
-    
-    console.log('Output:', output)
+    console.log(output)
 
     const worker = useRef()
 
     useEffect(() => {
         if (!worker.current) {
-            worker.current = new Worker(
-                new URL('../utils/translate.worker.js', import.meta.url), 
-                { type: 'module' }
-            )
+            worker.current = new Worker(new URL('../utils/translate.worker.js', import.meta.url), {
+                type: 'module'
+            })
         }
 
         const onMessageReceived = async (e) => {
-            console.log('Worker message received:', e.data)
-            
             switch (e.data.status) {
                 case 'initiate':
-                    console.log('DOWNLOADING MODEL')
-                    setError(null)
+                    console.log('DOWNLOADING')
                     break;
                 case 'progress':
-                    console.log('LOADING MODEL')
+                    console.log('LOADING')
                     break;
                 case 'update':
-                    console.log("Translation chunk received:", e.data.output)
+                    setTranslation(e.data.output)
+                    console.log(e.data.output)
                     break;
                 case 'complete':
-                    console.log("Translation complete:", e.data.output)
                     setTranslating(false)
-                    
-                    // Handle different output formats
-                    if (Array.isArray(e.data.output)) {
-                        // If it's an array of translation objects
-                        setTranslation(e.data.output)
-                    } else if (e.data.output && e.data.output.translation_text) {
-                        // If it's a single translation object
-                        setTranslation([e.data.output])
-                    } else {
-                        // Fallback to setting as is
-                        setTranslation(e.data.output)
-                    }
+                    console.log("DONE")
                     break;
-                case 'error':
-                    console.error("Translation error:", e.data.message)
-                    setTranslating(false)
-                    setError(e.data.message || 'Translation failed')
-                    break;
-                default:
-                    console.log('Unknown status:', e.data.status)
             }
         }
 
         worker.current.addEventListener('message', onMessageReceived)
 
         return () => worker.current.removeEventListener('message', onMessageReceived)
-    }, [])
+    })
 
-    // Prepare text element for display
-    const textElement = tab === 'transcription' 
-        ? output.map(val => val.text).join(' ')
-        : (() => {
-            if (!translation) return '';
-            
-            if (Array.isArray(translation)) {
-                // Handle array of translation objects
-                return translation.map(item => {
-                    if (typeof item === 'string') return item;
-                    if (item.translation_text) return item.translation_text;
-                    return '';
-                }).join(' ');
-            }
-            
-            if (typeof translation === 'string') {
-                return translation;
-            }
-            
-            if (translation.translation_text) {
-                return translation.translation_text;
-            }
-            
-            return '';
-        })()
+    const textElement = tab === 'transcription' ? output.map(val => val.text) : translation || ''
 
     function handleCopy() {
         navigator.clipboard.writeText(textElement)
@@ -111,20 +63,17 @@ export default function Information(props) {
             return
         }
 
-        console.log('Starting translation to:', toLanguage)
         setTranslating(true)
-        setError(null)
-        setTranslation(null)
 
-        // Send text to worker
-        const textToTranslate = output.map(val => val.text).join(' ')
-        
         worker.current.postMessage({
-            text: textToTranslate,
+            text: output.map(val => val.text),
             src_lang: 'eng_Latn',
             tgt_lang: toLanguage
         })
     }
+
+
+
 
     return (
         <main className='flex-1  p-4 flex flex-col gap-3 text-center sm:gap-4 justify-center pb-20 max-w-prose w-full mx-auto'>
@@ -134,14 +83,6 @@ export default function Information(props) {
                 <button onClick={() => setTab('transcription')} className={'px-4 rounded duration-200 py-1 ' + (tab === 'transcription' ? ' bg-blue-300 text-white' : ' text-blue-400 hover:text-blue-600')}>Transcription</button>
                 <button onClick={() => setTab('translation')} className={'px-4 rounded duration-200 py-1  ' + (tab === 'translation' ? ' bg-blue-300 text-white' : ' text-blue-400 hover:text-blue-600')}>Translation</button>
             </div>
-            
-            {/* Error message */}
-            {error && (
-                <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative'>
-                    <span className='block sm:inline'>{error}</span>
-                </div>
-            )}
-
             <div className='my-8 flex flex-col-reverse max-w-prose w-full mx-auto gap-4'>
                 {(!finished || translating) && (
                     <div className='grid place-items-center'>
@@ -151,16 +92,7 @@ export default function Information(props) {
                 {tab === 'transcription' ? (
                     <Transcription {...props} textElement={textElement} />
                 ) : (
-                    <Translation 
-                        {...props} 
-                        toLanguage={toLanguage} 
-                        translating={translating} 
-                        textElement={translation} 
-                        setTranslating={setTranslating} 
-                        setTranslation={setTranslation} 
-                        setToLanguage={setToLanguage} 
-                        generateTranslation={generateTranslation} 
-                    />
+                    <Translation {...props} toLanguage={toLanguage} translating={translating} textElement={textElement} setTranslating={setTranslating} setTranslation={setTranslation} setToLanguage={setToLanguage} generateTranslation={generateTranslation} />
                 )}
             </div>
             <div className='flex items-center gap-4 mx-auto '>

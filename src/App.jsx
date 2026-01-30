@@ -25,11 +25,9 @@ function App() {
 
   useEffect(() => {
     if (!worker.current) {
-      // Add ?worker to the import path for Vite
-      worker.current = new Worker(
-        new URL('./utils/whisper.worker.js', import.meta.url), 
-        { type: 'module' }
-      )
+      worker.current = new Worker(new URL('./utils/whisper.worker.js', import.meta.url), {
+        type: 'module'
+      })
     }
 
     const onMessageReceived = async (e) => {
@@ -56,7 +54,7 @@ function App() {
     worker.current.addEventListener('message', onMessageReceived)
 
     return () => worker.current.removeEventListener('message', onMessageReceived)
-  }, []) // Add empty dependency array here!
+  })
 
   async function readAudioFrom(file) {
     const sampling_rate = 16000
@@ -85,9 +83,9 @@ function App() {
       <section className='min-h-screen flex flex-col'>
         <Header />
         {output ? (
-          <Information output={output} finished={finished} />
+          <Information output={output} finished={finished}/>
         ) : loading ? (
-          <Transcribing downloading={downloading} />
+          <Transcribing />
         ) : isAudioAvailable ? (
           <FileDisplay handleFormSubmission={handleFormSubmission} handleAudioReset={handleAudioReset} file={file} audioStream={audioStream} />
         ) : (
