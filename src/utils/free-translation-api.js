@@ -1,9 +1,8 @@
-// FREE Translation API utilities
-// No API key required for basic usage!
+
 
 /**
  * Option 1: MyMemory Translation API (FREE - 10,000 chars/day)
- * No API key required for basic usage
+ * 
  */
 export async function translateWithMyMemory(text, targetLanguageCode) {
   try {
@@ -28,11 +27,7 @@ export async function translateWithMyMemory(text, targetLanguageCode) {
   }
 }
 
-/**
- * Option 2: LibreTranslate API (FREE - Self-hosted or public instance)
- * Public instance: https://libretranslate.com
- * Optional: Can self-host for unlimited free usage
- */
+
 export async function translateWithLibreTranslate(text, targetLanguageCode) {
   try {
     const response = await fetch('https://libretranslate.com/translate', {
@@ -61,7 +56,7 @@ export async function translateWithLibreTranslate(text, targetLanguageCode) {
 }
 
 /**
- * Option 3: Google Translate (Unofficial/Free API)
+ *  Google Translate (Unofficial/Free API)
  * Uses a free, unofficial endpoint
  * Note: This is unofficial and may be rate-limited
  */
