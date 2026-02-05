@@ -1,9 +1,6 @@
 
 
-/**
- * Option 1: MyMemory Translation API (FREE - 10,000 chars/day)
- * 
- */
+
 export async function translateWithMyMemory(text, targetLanguageCode) {
   try {
     const response = await fetch(
@@ -55,11 +52,7 @@ export async function translateWithLibreTranslate(text, targetLanguageCode) {
   }
 }
 
-/**
- *  Google Translate (Unofficial/Free API)
- * Uses a free, unofficial endpoint
- * Note: This is unofficial and may be rate-limited
- */
+
 export async function translateWithGoogleFree(text, targetLanguageCode) {
   try {
     const response = await fetch(
@@ -121,7 +114,7 @@ export async function translateText(text, targetLanguage) {
 
 /**
  * Language codes for FREE translation services
- * These codes work across MyMemory, LibreTranslate, and Google Translate
+ * 
  */
 export const FREE_LANGUAGE_CODES = {
   "Spanish": "es",
